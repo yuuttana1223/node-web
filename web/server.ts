@@ -1,3 +1,4 @@
+import { readFileSync } from "fs";
 import net from "net";
 
 const SERVER = {
@@ -5,32 +6,22 @@ const SERVER = {
   PORT: 3000,
 } as const;
 
-const helloResponse = `HTTP/1.1 200 OK
-content-length: 152
-
-<!DOCTYPE html>
-<html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <title>hello</title>
-  </head>
-  <body>
-    <h1>hello</h1>
-  </body>
-</html>
-`;
-
 // 接続されたら何をするかを設定
 net
   .createServer((socket) => {
     console.log("クライアントからの接続を確認しました! 🎉");
     // データを受け取ったら何をするかを設定
     socket.on("data", (data) => {
-      // const httpRequest = data.toString();
-      // const requestLine = httpRequest.split("\n")[0];
-      console.log(`クライアントから「${data}」を受信しました`);
-      socket.write(helloResponse);
-      console.log(`クライアントに「${data}」を送り返します`);
+      const httpRequest = data.toString();
+      const requestLine = httpRequest.split("\n")[0];
+      console.log(requestLine);
+      const path = requestLine.split(" ")[1];
+      const fileContent = readFileSync(`.${path}`);
+      const httpResponse = `HTTP/1.1 200 OK
+      content-length: ${fileContent.length}
+
+      ${fileContent}`;
+      socket.write(httpResponse);
     });
     socket.on("close", () => {
       console.log("クライアントから切断されました");
