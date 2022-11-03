@@ -4,7 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node main.ts"
+    "start": "ts-node main.ts",
+    "echo:client": "ts-node ./echo/client.ts",
+    "echo:server": "ts-node ./echo/server.ts"
   },
   "devDependencies": {
     "@types/node": "^18.11.9",
