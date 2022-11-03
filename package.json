@@ -6,7 +6,8 @@
   "scripts": {
     "start": "ts-node main.ts",
     "echo:client": "ts-node ./echo/client.ts",
-    "echo:server": "ts-node ./echo/server.ts"
+    "echo:server": "ts-node ./echo/server.ts",
+    "web:server": "ts-node ./web/server.ts"
   },
   "devDependencies": {
     "@types/node": "^18.11.9",
