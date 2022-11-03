@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import net from "net";
 
 const SERVER = {
@@ -16,12 +16,26 @@ net
       const requestLine = httpRequest.split("\n")[0];
       console.log(requestLine);
       const path = requestLine.split(" ")[1];
-      const responseFile = path.endsWith("/") ? `${path}index.html` : path;
-      const fileContent = readFileSync(`.${responseFile}`);
-      const httpResponse = `HTTP/1.1 200 OK
-      content-length: ${fileContent.length}
+      // ルートパスの場合はindex.htmlを返す
+      const responseFile = path.endsWith("/")
+        ? `.${path}index.html`
+        : `.${path}`;
 
-      ${fileContent}`;
+      if (!existsSync(responseFile)) {
+        // 改行を入れないとブラウザが読み込めない
+        const httpResponse = `HTTP/1.1 404 Not Found
+Content-Length: 0
+
+`;
+        socket.write(httpResponse);
+        return;
+      }
+
+      const fileContent = readFileSync(responseFile);
+      const httpResponse = `HTTP/1.1 200 OK
+Content-Length: ${fileContent.length}
+
+${fileContent}`;
       socket.write(httpResponse);
     });
     socket.on("close", () => {
