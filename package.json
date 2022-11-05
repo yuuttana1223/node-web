@@ -8,7 +8,8 @@
     "echo:client": "ts-node ./echo/client.ts",
     "echo:server": "ts-node ./echo/server.ts",
     "web:server": "ts-node ./web/server.ts",
-    "web:httpServer": "ts-node ./web/httpServer.ts"
+    "web:httpServer": "ts-node ./web/httpServer.ts",
+    "web:app": "ts-node ./task-web-app/application.ts"
   },
   "devDependencies": {
     "@types/node": "^18.11.9",
