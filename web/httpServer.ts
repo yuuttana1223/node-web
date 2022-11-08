@@ -1,24 +1,52 @@
-import { createServer } from "http";
-import { existsSync, readFileSync } from "fs";
+import { createServer, request } from "http";
+import { existsSync, readFileSync, statSync } from "fs";
 
-const SERVER = {
+const WEB_SERVER = {
   HOST: "127.0.0.1",
   PORT: 3000,
 } as const;
 
-createServer((request, response) => {
-  // httpを使っていないときはごちゃごちゃやって取り出していた
-  const path = request.url;
-  const responseFile = path?.endsWith("/") ? `.${path}index.html` : `.${path}`;
+const APP_SERVER = {
+  URL: "http://127.0.0.1:8080",
+} as const;
 
-  if (!existsSync(responseFile)) {
-    response.statusCode = 404;
-    response.end();
+createServer((req, res) => {
+  // httpを使っていないときはごちゃごちゃやって取り出していた
+  const { method, url, headers } = req;
+  const responseFile = url?.endsWith("/") ? `.${url}index.html` : `.${url}`;
+
+  if (
+    method === "GET" ||
+    !existsSync(responseFile) ||
+    statSync(responseFile).isDirectory()
+  ) {
+    const taskWebAppRequest = request(APP_SERVER.URL, {
+      method,
+      path: url,
+      headers,
+    });
+
+    taskWebAppRequest.on("response", (taskWebAppResponse) => {
+      if (taskWebAppResponse.statusCode) {
+        res.writeHead(taskWebAppResponse.statusCode);
+      }
+      taskWebAppResponse.on("data", (data) => {
+        res.write(data);
+      });
+      taskWebAppResponse.on("end", () => {
+        res.end();
+      });
+    });
+    taskWebAppRequest.end();
     return;
   }
 
   const fileContent = readFileSync(responseFile);
-  response.statusCode = 200;
-  response.write(fileContent);
-  response.end();
-}).listen(SERVER.PORT, SERVER.HOST);
+  res.statusCode = 200;
+  res.write(fileContent);
+  res.end();
+}).listen(WEB_SERVER.PORT, WEB_SERVER.HOST, () => {
+  console.log(
+    `Web server is running at http://${WEB_SERVER.HOST}:${WEB_SERVER.PORT}`
+  );
+});
