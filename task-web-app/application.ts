@@ -66,5 +66,7 @@ createServer((request, response) => {
   response.writeHead(StatusCodes.NOT_FOUND);
   response.end();
 }).listen(SERVER.PORT, SERVER.HOST, () => {
-  console.log(`Server running at http://${SERVER.HOST}:${SERVER.PORT}/`);
+  console.log(
+    `Application server running at http://${SERVER.HOST}:${SERVER.PORT}/`
+  );
 });
