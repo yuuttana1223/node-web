@@ -14,11 +14,10 @@ createServer((req, res) => {
   // httpを使っていないときはごちゃごちゃやって取り出していた
   const { method, url, headers } = req;
   const responseFile = url?.endsWith("/") ? `.${url}index.html` : `.${url}`;
-
   if (
-    method === "GET" ||
-    !existsSync(responseFile) ||
-    statSync(responseFile).isDirectory()
+    method !== "GET" || // GETメソッドは対象外
+    !existsSync(responseFile) || // ファイルが存在しない
+    statSync(responseFile).isDirectory() // ディレクトリかどうか(ファイルではないことの確認)
   ) {
     const taskWebAppRequest = request(APP_SERVER.URL, {
       method,
@@ -26,7 +25,16 @@ createServer((req, res) => {
       headers,
     });
 
+    req.on("data", (data) => {
+      taskWebAppRequest.write(data);
+    });
+
     taskWebAppRequest.on("response", (taskWebAppResponse) => {
+      Object.entries(taskWebAppResponse.headers).forEach(([key, value]) => {
+        if (value) {
+          res.setHeader(key, value);
+        }
+      });
       if (taskWebAppResponse.statusCode) {
         res.writeHead(taskWebAppResponse.statusCode);
       }
@@ -37,7 +45,12 @@ createServer((req, res) => {
         res.end();
       });
     });
-    taskWebAppRequest.end();
+
+    // リクエストのデータの受取が完了するとendイベントが発火する
+    req.on("end", () => {
+      // アプリケーション・サーバーへのリクエストを終了する
+      taskWebAppRequest.end();
+    });
     return;
   }
 

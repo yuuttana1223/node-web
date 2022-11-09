@@ -54,12 +54,32 @@ const getTasksHTML = () => {
 
 createServer((request, response) => {
   // httpを使っていないときはごちゃごちゃやって取り出していた
-  const path = request.url;
-  if (path === "/tasks") {
+  const { url, method } = request;
+  if (method === "GET" && url === "/tasks") {
     response.writeHead(StatusCodes.OK);
     const responseBody = getTasksHTML();
     response.write(responseBody);
     response.end();
+    return;
+  }
+  if (method === "POST" && url === "/tasks") {
+    let requestBody = "";
+    request.on("data", (data) => {
+      requestBody += data;
+    });
+    request.on("end", () => {
+      const [_titleKey, title] = requestBody.split("=");
+      tasks.push({
+        title,
+        createdAt: new Date(),
+      });
+
+      // postでHTMLを返すのはおかしいのでリダイレクトする
+      response.writeHead(StatusCodes.SEE_OTHER, {
+        Location: "/tasks",
+      });
+      response.end();
+    });
     return;
   }
 
