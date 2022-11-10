@@ -82,6 +82,15 @@ createServer((request, response) => {
     });
     return;
   }
+  if (method === "GET" && url === "/api/tasks") {
+    response.writeHead(StatusCodes.OK, {
+      "Content-Type": "application/json",
+    });
+    const responseBody = JSON.stringify(tasks);
+    response.write(responseBody);
+    response.end();
+    return;
+  }
 
   response.writeHead(StatusCodes.NOT_FOUND);
   response.end();
