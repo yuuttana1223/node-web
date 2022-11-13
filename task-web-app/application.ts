@@ -1,15 +1,35 @@
 import { createServer } from "http";
 import { StatusCodes } from "http-status-codes";
+import uid from "uid-safe";
+
+type Task = {
+  title: string;
+  createdAt: Date;
+};
 
 const SERVER = {
   HOST: "127.0.0.1",
   PORT: 8080,
 } as const;
 
-type Task = {
-  title: string;
-  createdAt: Date;
+type Session = {
+  [key: string]: {
+    userId: number;
+  };
 };
+
+const sessions = {} as Session;
+
+const users = [
+  {
+    id: 1,
+    name: "user1",
+  },
+  {
+    id: 2,
+    name: "user2",
+  },
+];
 
 const tasks: Task[] = [
   {
@@ -135,6 +155,41 @@ createServer((request, response) => {
       "Set-Cookie": "name=alice",
     });
     response.write("set cookie");
+    response.end();
+    return;
+  }
+
+  if (method === "GET" && url === "/session-start") {
+    const userId = 2;
+    const sessionId = uid.sync(24);
+    sessions[sessionId] = {
+      userId,
+    };
+    response.writeHead(StatusCodes.OK, {
+      "Set-Cookie": `sid=${sessionId}`,
+    });
+    response.write("session start");
+    response.end();
+    return;
+  }
+
+  if (method === "GET" && url === "/me") {
+    const { cookie } = request.headers;
+    if (!cookie) {
+      response.writeHead(StatusCodes.UNAUTHORIZED);
+      response.end();
+      return;
+    }
+    const sessionId = cookie.split("=")[1];
+    const userId = sessions[sessionId].userId;
+    const user = users.find((user) => {
+      return user.id === userId;
+    });
+    if (!user) {
+      return;
+    }
+    response.writeHead(StatusCodes.OK);
+    response.write(`userId: ${userId}, userName: ${user.name}`);
     response.end();
     return;
   }
