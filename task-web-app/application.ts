@@ -127,6 +127,18 @@ createServer((request, response) => {
     return;
   }
 
+  if (method === "GET" && url === "/set-cookie-sample") {
+    response.writeHead(StatusCodes.OK, {
+      // response.setHeader("Set-Cookie", "name=alice");と同じ意味
+      // nameではなく、session-idを入れることが多い
+      // 今後リクエストヘッダーに毎回name=aliceを入れる必要がなくなる(勝手に送信される)
+      "Set-Cookie": "name=alice",
+    });
+    response.write("set cookie");
+    response.end();
+    return;
+  }
+
   response.writeHead(StatusCodes.NOT_FOUND);
   response.end();
 }).listen(SERVER.PORT, SERVER.HOST, () => {
