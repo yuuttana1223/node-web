@@ -6,7 +6,12 @@ const SERVER = {
   PORT: 8080,
 } as const;
 
-const tasks = [
+type Task = {
+  title: string;
+  createdAt: Date;
+};
+
+const tasks: Task[] = [
   {
     title: "フロントエンドの実装",
     createdAt: new Date(),
@@ -89,6 +94,36 @@ createServer((request, response) => {
     const responseBody = JSON.stringify(tasks);
     response.write(responseBody);
     response.end();
+    return;
+  }
+
+  if (method === "POST" && url === "/api/tasks") {
+    let requestBody = "";
+    request.on("data", (data) => {
+      // stringに変換しないとBuffer型になってしまう
+      // +=で無理やりstringにもできる 例 requestBody += data
+      requestBody = data.toString();
+    });
+
+    request.on("end", () => {
+      const { title }: Task = JSON.parse(requestBody);
+      if (!title || title.length < 1 || title.length > 20) {
+        response.writeHead(StatusCodes.BAD_REQUEST);
+        response.end();
+        return;
+      }
+      const newTask = {
+        title,
+        createdAt: new Date(),
+      };
+      tasks.push(newTask);
+      response.writeHead(StatusCodes.CREATED, {
+        "Content-Type": "application/json",
+      });
+      const responseBody = JSON.stringify(newTask);
+      response.write(responseBody);
+      response.end();
+    });
     return;
   }
 
