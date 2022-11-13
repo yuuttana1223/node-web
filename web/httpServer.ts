@@ -1,5 +1,6 @@
 import { createServer, request } from "http";
 import { existsSync, readFileSync, statSync } from "fs";
+import { StatusCodes } from "http-status-codes";
 
 const WEB_SERVER = {
   HOST: "127.0.0.1",
@@ -19,38 +20,38 @@ createServer((req, res) => {
     !existsSync(responseFile) || // ファイルが存在しない
     statSync(responseFile).isDirectory() // ディレクトリかどうか(ファイルではないことの確認)
   ) {
-    const taskWebAppRequest = request(APP_SERVER.URL, {
-      method,
-      path: url,
-      headers,
-    });
-
-    req.on("data", (data) => {
-      taskWebAppRequest.write(data);
-    });
-
-    taskWebAppRequest.on("response", (taskWebAppResponse) => {
-      Object.entries(taskWebAppResponse.headers).forEach(([key, value]) => {
-        if (value) {
-          res.setHeader(key, value);
-        }
-      });
-      if (taskWebAppResponse.statusCode) {
-        res.writeHead(taskWebAppResponse.statusCode);
-      }
-      taskWebAppResponse.on("data", (data) => {
-        res.write(data);
-      });
-      taskWebAppResponse.on("end", () => {
-        res.end();
-      });
-    });
-
-    // リクエストのデータの受取が完了するとendイベントが発火する
-    req.on("end", () => {
-      // アプリケーション・サーバーへのリクエストを終了する
-      taskWebAppRequest.end();
-    });
+    // const taskWebAppRequest = request(APP_SERVER.URL, {
+    //   method,
+    //   path: url,
+    //   headers,
+    // });
+    // req.on("data", (data) => {
+    //   taskWebAppRequest.write(data);
+    // });
+    // taskWebAppRequest.on("response", (taskWebAppResponse) => {
+    //   Object.entries(taskWebAppResponse.headers).forEach(([key, value]) => {
+    //     if (value) {
+    //       res.setHeader(key, value);
+    //     }
+    //   });
+    //   if (taskWebAppResponse.statusCode) {
+    //     res.writeHead(taskWebAppResponse.statusCode);
+    //   }
+    //   taskWebAppResponse.on("data", (data) => {
+    //     res.write(data);
+    //   });
+    //   taskWebAppResponse.on("end", () => {
+    //     res.end();
+    //   });
+    // });
+    // // リクエストのデータの受取が完了するとendイベントが発火する
+    // req.on("end", () => {
+    //   // アプリケーション・サーバーへのリクエストを終了する
+    //   taskWebAppRequest.end();
+    // });
+    // return;
+    res.writeHead(StatusCodes.NOT_FOUND);
+    res.end();
     return;
   }
 

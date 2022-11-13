@@ -1,4 +1,4 @@
-const API_URL = "http://127.0.0.1:3000/api";
+const API_URL = "http://127.0.0.1:8080/api";
 const tbody = document.getElementById("tasks-table-body");
 const titleInput = document.getElementById("task-title-input");
 const taskAddButton = document.getElementById("task-add-button");

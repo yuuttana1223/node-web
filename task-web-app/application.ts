@@ -7,7 +7,12 @@ type Task = {
   createdAt: Date;
 };
 
-const SERVER = {
+const WEB_SERVER = {
+  HOST: "127.0.0.1",
+  PORT: 3000,
+} as const;
+
+const APP_SERVER = {
   HOST: "127.0.0.1",
   PORT: 8080,
 } as const;
@@ -110,6 +115,7 @@ createServer((request, response) => {
   if (method === "GET" && url === "/api/tasks") {
     response.writeHead(StatusCodes.OK, {
       "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": `http://${WEB_SERVER.HOST}:${WEB_SERVER.PORT}`,
     });
     const responseBody = JSON.stringify(tasks);
     response.write(responseBody);
@@ -196,8 +202,8 @@ createServer((request, response) => {
 
   response.writeHead(StatusCodes.NOT_FOUND);
   response.end();
-}).listen(SERVER.PORT, SERVER.HOST, () => {
+}).listen(APP_SERVER.PORT, APP_SERVER.HOST, () => {
   console.log(
-    `Application server running at http://${SERVER.HOST}:${SERVER.PORT}/`
+    `Application server running at http://${APP_SERVER.HOST}:${APP_SERVER.PORT}/`
   );
 });
